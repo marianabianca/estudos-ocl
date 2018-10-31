@@ -1,0 +1,39 @@
+model diagrama3
+
+class Voo
+attributes
+	numVoo: String
+	decolagemHorario: Time
+end
+
+class CompanhiaAerea
+attributes
+	nome: String
+end
+
+class Time
+attributes
+	hora: Integer
+	minutos: Integer
+end
+
+
+
+association VooOperado between
+	Voo[*] role operados
+	CompanhiaAerea[1] role operador
+end
+
+association VooCodeShared between
+	Voo[*] role voosCodeShared
+	CompanhiaAerea[1..*] role codeShared
+end
+
+
+
+constraints
+
+context Voo
+	inv: self.codeShared->size() >= 1
+	inv: self.codeShared->forAll(nome <> self.operador.nome)
+
