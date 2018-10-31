@@ -1,0 +1,70 @@
+model diagrama4
+
+class Pessoa
+attributes
+	nome: String
+	dataNascimento: Date
+	totalDeSalarios: Real
+operations
+	calculaTotalRendimentos(): Real
+	calculaIdade(): Integer
+end
+
+class Date
+attributes
+	dia: Integer
+	mes: Integer
+	ano: Integer
+operations
+	equals(d:Date): Boolean
+end
+
+class Empresa
+attributes
+	nome: String
+	idadeMedia: Real
+	maiorSalario: Real
+	emTreinamento: Integer
+operations
+	emTreinamento(): Integer
+end
+
+
+
+association Gerencia between
+	Pessoa[1] role gerente
+	Empresa[1] role empresaGerenciada
+end
+
+associationclass Emprego between
+	Pessoa[*] role colaborador
+	Empresa[*] role empresa
+attributes
+	salario: Real
+	cargo: String
+	emTreinamento: Boolean
+operations
+	incorporaGratificacao(grat:Integer)
+end
+
+
+constraints
+
+context Pessoa
+	inv: self.totalDeSalarios = self.emprego.salario->sum()
+
+context Emprego
+	inv: (self.colaborador = self.empresa.gerente) implies self.cargo = 'gerente'
+
+context Emprego::incorporaGratificacao(grat: Integer)
+	post: self.salario = self.salario@pre + grat 
+
+context Empresa
+	inv: self.maiorSalario = self.emprego.salario->max()
+	inv: self.emTreinamento = self.emprego.emTreinamento->select(t: Boolean | t = true)->size()
+
+
+
+
+
+

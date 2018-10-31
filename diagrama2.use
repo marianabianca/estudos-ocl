@@ -1,0 +1,47 @@
+model diagrama2
+
+class Cabine
+attributes
+	categoriaAssento: Categoria
+end
+
+class Assento
+attributes
+	idAssento: String
+end
+
+class Comissario
+attributes
+	anosServico: Integer
+	ehSupervisor: Boolean
+end
+
+enum Categoria {primeira, executiva, economica_extra, economica}
+
+
+
+
+association CabineAtendentes between
+	Cabine[1] role cabineAtendente
+	Comissario[1..4] role atendentes
+end
+
+association CabineSupervisor between
+	Cabine[1] role cabineSupervisor
+	Comissario[1] role supervisor
+end
+
+association AssentosCabine between
+	Assento[2..*] role assentos
+	Cabine[1] role cabine
+end
+
+
+constraints
+
+context Comissario
+	inv: (self.ehSupervisor) implies self.anosServico >= 10
+	inv: anosServico >= 0
+
+context Cabine
+	inv: (self.assentos->size() > 200) implies self.atendentes->size() >= 4

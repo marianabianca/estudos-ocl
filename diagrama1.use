@@ -1,0 +1,145 @@
+model Diagrama1
+
+class Voo
+attributes
+	numVoo: String
+	decolagemHorario: Time
+end
+
+class Aeroporto
+attributes
+	nome: String
+	codigo: String
+	localizacao: String
+end
+
+class Aeronave
+attributes
+	dataVoo: Date
+	numAssentos: Integer
+end
+
+class Cabine
+attributes
+	categoriaAssento: Categoria
+end
+
+enum Categoria {primeira, executiva, economica_extra, economica}
+
+class Assento
+attributes
+	idAssento: String
+end
+
+class Reserva
+attributes
+	dataReserva: Date
+end
+
+class CompanhiaAerea
+attributes
+	name: String
+end
+
+class Passageiro
+attributes
+	nome: String
+	status: ClassePassageiro
+end
+
+enum ClassePassageiro {primeira, executiva, normal}
+
+class Time
+attributes
+	hora: Integer
+	minutos: Integer
+end
+
+class Date
+attributes
+	dia: Integer
+	mes: Integer
+	ano: Integer
+operations
+	equals(d:Date): Boolean
+end
+
+
+
+
+association VoosDecoloando between
+	Voo[*] role decolando 
+	Aeroporto[1] role origem
+end
+
+association VoosAterrisando between
+	Voo[*] role aterrisando 
+	Aeroporto[1] role destino
+end
+
+association CabinesAeronave between
+	Aeronave[1] role aeronave
+	Cabine[1..*] role cabines
+end
+
+association AssentosDaCabine between
+	Cabine[1] role cabine
+	Assento[2..*] role assentos
+end
+
+association AssentosDaAeronave between
+	Aeronave[1] role aeronave
+	Assento[2..*] role assentos
+end
+
+association CompanhiaAereaVoo between
+	Voo[*] role voos
+	CompanhiaAerea[1] role companhia
+end
+
+association AeronovaVoo between
+	Aeronave[*] role aeronaves
+	Voo[1] role voo
+end
+
+association ReservaPassageiro between
+	Reserva[*] role reservas
+	Passageiro[1] role passageiro
+end
+
+association ReservaAeronave between
+	Aeronave[1..*] role aeronaves
+	Reserva[*] role reservas
+end
+
+association AssentoAeronave between
+	Assento[1..*] role assentosReservados
+	Reserva[0..1] role reserva
+end
+ 
+
+
+constraints
+
+context Voo
+	inv: self.destino <> self.origem
+
+context Aeronave
+	inv: if self.numAssentos > 500
+		 then self.cabines->forAll(assentos->size() > 20 and assentos->size() < 300)
+		 else self.cabines->forAll(assentos->size() > 0)
+		 endif
+	inv: self.numAssentos > 0
+	inv: self.numAssentos = self.assentos->size() and self.numAssentos = self.cabines->collect(assentos)->size()
+
+	--self.numAssentos = self.cabines->iterate(soma:Integer=0 | soma = soma + assentos->size())
+	 
+
+context Time
+	inv: self.minutos >= 0 and self.minutos <= 31
+	inv: self.hora >= 0 and self.hora <= 23
+
+context Date
+	inv: self.dia >= 1 and self.dia <= 31
+	inv: self.mes >= 1 and self.mes <= 12
+	inv: self.ano <= 2100
